@@ -1,65 +1,89 @@
-import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, TextInput, View, Dimensions, Text, Button } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchBoardAsync } from '../store/actions/Board'
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
-export default function Game({name, level}) {
-  const [board, setBoard] = useState([]);
+export default function Game({ navigation, route }) {
+  const [inputBoard, setInputBoard] = useState([]);
+  const [status, setStatus] = useState("");
+  const dispatch = useDispatch()
+  const { level, name } = route.params;
 
   useEffect(() => {
-    axios({
-      method: 'GET',
-      url: 'https://sugoku.herokuapp.com/board?difficulty=easy'
-    })
-      .then(({data}) => {
-        setBoard(data.board)
-      })
-      .catch((err) => {
-        console.log(err);
-      })
+    dispatch(fetchBoardAsync(level))
   }, []);
 
+  const board = useSelector(state => state.boards.data)
+
+  useEffect(() => {
+    setInputBoard(board);
+  }, [board]);
+
+  //helper from sugoku api (for fetching solution and validate answer)...(1)
+  const encodeBoard = (board) =>
+    board.reduce((result, row, i) =>
+      result + `%5B${encodeURIComponent(row)}%5D${i === board.length - 1 ? '' : '%2C'}`, '')
+//helper from sugoku api (for fetching solution and validate answer)...(2)
+  const encodeParams = (params) =>
+    Object.keys(params)
+      .map(key => key + '=' + `%5B${encodeBoard(params[key])}%5D`)
+      .join('&');
+
   const handleUpdate = (value, iRow, iCol) => {
-    const newBoard = JSON.parse(JSON.stringify(board));
+    const newBoard = JSON.parse(JSON.stringify(inputBoard));
     newBoard[iRow][iCol] = value;
-    setBoard(newBoard);
+    setInputBoard(newBoard);
   };
 
   const validate = () => {
-    axios({
-      method: 'POST',
-      url: 'https://sugoku.herokuapp.com/validate',
-      data: {
-        board
-      }
+    const data = { board: inputBoard };
+    fetch("https://sugoku.herokuapp.com/validate", {
+      method: "POST",
+      body: encodeParams(data),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
     })
-      .then(({data}) => {
-        if(data){
-          alert(data.status)
-        } else{
-          throw new Error()
-        }
+      .then((response) => response.json())
+      .then((response) => {
+        setStatus(response.status);
       })
-      .catch((err) => {
-        alert('failed')
+      .catch(console.warn);
+  }
+
+  const solve = () => {
+    const data = { board };
+    fetch("https://sugoku.herokuapp.com/solve", {
+      method: "POST",
+      body: encodeParams(data),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        setInputBoard(response.solution);
       })
+      .catch(console.warn);
   }
 
   return (
     <View style={styles.container}>
       <Text
         style={styles.titleText}
-      >Welcome to Sugoku {name}{"\n"}</Text>
+      >Welcome {name}{"\n"}</Text>
+      <Text
+        style={{fontSize:20, color: '#006d77'}}
+      >Difficulty: {level}{"\n"}</Text>
       {
-      board.map((row, iRow) => {
+      inputBoard.map((row, iRow) => {
         return (
           <View style={styles.row} key={iRow}>
             {row.map((col, iCol) => {
               return (
                 <TextInput
+                  keyboardType={"numeric"}
                   maxLength={1}
+                  editable={board[iRow][iCol] === 0 ? true : false}
                   key={iCol}
                   textAlign="center"
                   style={styles.col}
@@ -72,17 +96,28 @@ export default function Game({name, level}) {
         )        
       })      
       }
-      <Text>{"\n"}</Text>
-      <View style={{flex: 2}}>
-        <Button
-            title="Validate"
-            onPress={() => validate()}
-        ></Button>
-        <Button
-            title="Solve"
-            onPress={() => alert('solving')}
-        ></Button>
+      <View style={{ flexDirection: "row", marginTop: 10 }}>
+        {status == "solved" ? (
+          <View>
+            <Button
+              title="Submit"
+              onPress={() => navigation.navigate("Finish")}
+            />
+          </View>
+        ) : (
+          <View>
+            <Button title="solve" onPress={() => solve()} />
+          </View>
+        )}
+        <View style={{ marginLeft: 10 }}>
+          <Button title="validate" onPress={() => validate()} />
+        </View>
       </View>
+      <View style={{ marginBottom: 10 }}>
+          <Text style={{ color: "black", fontSize: 27, fontStyle: "italic" }}>
+            {status}
+          </Text>
+        </View>
     </View>
   );
 }

@@ -7,8 +7,9 @@ export default function Home({navigation}) {
     const [level, setLevel] = useState('');
     const [name, setName] = useState('')
 
-    goToGame = () => {
-        navigation.navigate('Game')
+    function goToGame (level, name) {
+        navigation.navigate('Game', {level, name})
+        setName("");
     }
 
     return (
@@ -26,19 +27,21 @@ export default function Home({navigation}) {
                 onChangeText={(value) => setName(value)}
             ></TextInput>
             <Text>Pick Level{"\n"}</Text> 
-            <Picker
-                style={styles.picker}
-                selectedValue={level}
-                onValueChange={(itemValue) =>
-                    setLevel(itemValue)
-            }>
-                <Picker.Item label="Easy" value="easy" />
-                <Picker.Item label="Medium" value="medium" />
-                <Picker.Item label="Hard" value="hard" />
-            </Picker>
+            <View style={{ borderRadius: 5, borderWidth: 1, height: 50, backgroundColor: "#FFF", marginBottom: 30 }}>
+                <Picker
+                    style={styles.picker}
+                    selectedValue={level}
+                    onValueChange={(itemValue) =>
+                        setLevel(itemValue)
+                }>
+                    <Picker.Item label="Easy" value="easy" />
+                    <Picker.Item label="Medium" value="medium" />
+                    <Picker.Item label="Hard" value="hard" />
+                </Picker>
+            </View>
             <Button
                 title="Game On"
-                onPress={() => goToGame(name, level)}
+                onPress={() => goToGame(level, name)}
             />
         </View>
     )
@@ -52,6 +55,7 @@ const styles = StyleSheet.create({
         justifyContent: "center"
     },
     input: {
+        textAlign: "center",
         borderWidth: 1,
         width: 250,
         fontSize: 20,
