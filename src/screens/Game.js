@@ -5,7 +5,7 @@ import { StyleSheet, TextInput, View, Dimensions, Text, Button } from 'react-nat
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
-export default function Game() {
+export default function Game({name, level}) {
   const [board, setBoard] = useState([]);
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function Game() {
     <View style={styles.container}>
       <Text
         style={styles.titleText}
-      >Welcome to Sugoku {"\n"}</Text>
+      >Welcome to Sugoku {name}{"\n"}</Text>
       {
       board.map((row, iRow) => {
         return (
@@ -73,10 +73,16 @@ export default function Game() {
       })      
       }
       <Text>{"\n"}</Text>
-      <Button
-          title="Submit"
-          onPress={() => validate()}
+      <View style={{flex: 2}}>
+        <Button
+            title="Validate"
+            onPress={() => validate()}
         ></Button>
+        <Button
+            title="Solve"
+            onPress={() => alert('solving')}
+        ></Button>
+      </View>
     </View>
   );
 }
@@ -84,7 +90,7 @@ export default function Game() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#f8edeb",
     alignItems: "center",
     justifyContent: "center"
   },
