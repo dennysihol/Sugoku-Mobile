@@ -8,16 +8,21 @@ export default function Home({navigation}) {
     const [name, setName] = useState('')
 
     function goToGame (level, name) {
-        navigation.navigate('Game', {level, name})
-        setName("");
+        if(!name){
+            alert('Input your name first')
+        } else if(!level) {
+            alert('Pick level first')
+        } else {
+            navigation.navigate('Game', {level, name})
+        }
     }
 
     return (
         <View style={styles.container}>
             <Image
-            style={{ width: 150, height: 150, marginBottom: 50 }}
+            style={{ width: 250, height: 150, marginBottom: 50 }}
             source={{
-                uri: 'https://i.pinimg.com/736x/0d/d4/c0/0dd4c084f81b76d1911c0fdd0116b337.jpg'
+                uri: 'https://i.imgur.com/jYdR951.jpg'
             }}
             />
             <Text>Input Your Name{"\n"}</Text>
@@ -34,6 +39,7 @@ export default function Home({navigation}) {
                     onValueChange={(itemValue) =>
                         setLevel(itemValue)
                 }>
+                    <Picker.Item label="Random" value="random" />
                     <Picker.Item label="Easy" value="easy" />
                     <Picker.Item label="Medium" value="medium" />
                     <Picker.Item label="Hard" value="hard" />

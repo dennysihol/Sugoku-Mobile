@@ -2,15 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, TextInput, View, Dimensions, Text, Button } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBoardAsync } from '../store/actions/Board'
+import { StackActions } from '@react-navigation/native';
+import CountDown from 'react-native-countdown-component';
 
 const windowWidth = Dimensions.get("window").width;
-const windowHeight = Dimensions.get("window").height;
 
 export default function Game({ navigation, route }) {
   const [inputBoard, setInputBoard] = useState([]);
   const [status, setStatus] = useState("");
   const dispatch = useDispatch()
   const { level, name } = route.params;
+
+  const Finished = (name) => {
+    navigation.dispatch(
+      StackActions.replace('Finish', {
+        name
+      })
+    );
+  } 
 
   useEffect(() => {
     dispatch(fetchBoardAsync(level))
@@ -74,6 +83,15 @@ export default function Game({ navigation, route }) {
       <Text
         style={{fontSize:20, color: '#006d77'}}
       >Difficulty: {level}{"\n"}</Text>
+      <CountDown
+        until={60 * 10}
+        size={20}
+        onFinish={() => alert('Finished')}
+        digitStyle={{backgroundColor: '#FFF'}}
+        digitTxtStyle={{color: '#1CC625'}}
+        timeToShow={['M', 'S']}
+        timeLabels={{m: 'MM', s: 'SS'}}
+      />
       {
       inputBoard.map((row, iRow) => {
         return (
@@ -101,7 +119,8 @@ export default function Game({ navigation, route }) {
           <View>
             <Button
               title="Submit"
-              onPress={() => navigation.navigate("Finish")}
+              color= "#2a9d8f"
+              onPress={() => Finished(name)}
             />
           </View>
         ) : (
@@ -113,8 +132,8 @@ export default function Game({ navigation, route }) {
           <Button title="validate" onPress={() => validate()} />
         </View>
       </View>
-      <View style={{ marginBottom: 10 }}>
-          <Text style={{ color: "black", fontSize: 27, fontStyle: "italic" }}>
+      <View style={{ marginTop: 10 }}>
+          <Text style={{ color: "blue", fontSize: 27 }}>
             {status}
           </Text>
         </View>
