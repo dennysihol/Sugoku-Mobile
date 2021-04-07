@@ -13,14 +13,6 @@ export default function Game({ navigation, route }) {
   const dispatch = useDispatch()
   const { level, name } = route.params;
 
-  const Finished = (name) => {
-    navigation.dispatch(
-      StackActions.replace('Finish', {
-        name
-      })
-    );
-  } 
-
   useEffect(() => {
     dispatch(fetchBoardAsync(level))
   }, []);
@@ -56,7 +48,15 @@ export default function Game({ navigation, route }) {
     })
       .then((response) => response.json())
       .then((response) => {
-        setStatus(response.status);
+        if(response.status == 'solved'){
+          navigation.dispatch(
+            StackActions.replace('Finish', {
+              name
+            })
+          )
+        } else {
+          alert('the game is unsolved')
+        }
       })
       .catch(console.warn);
   }
@@ -71,6 +71,7 @@ export default function Game({ navigation, route }) {
       .then((response) => response.json())
       .then((response) => {
         setInputBoard(response.solution);
+        setStatus('solved')
       })
       .catch(console.warn);
   }
@@ -115,19 +116,9 @@ export default function Game({ navigation, route }) {
       })      
       }
       <View style={{ flexDirection: "row", marginTop: 10 }}>
-        {status == "solved" ? (
-          <View>
-            <Button
-              title="Submit"
-              color= "#2a9d8f"
-              onPress={() => Finished(name)}
-            />
-          </View>
-        ) : (
-          <View>
-            <Button title="solve" onPress={() => solve()} />
-          </View>
-        )}
+        <View>
+          <Button title="solve" onPress={() => solve()} />
+        </View>
         <View style={{ marginLeft: 10 }}>
           <Button title="validate" onPress={() => validate()} />
         </View>
