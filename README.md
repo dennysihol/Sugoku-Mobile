@@ -1,1 +1,1 @@
-https://expo.io/@dennysihol/projects/sugoku-isfox
+# https://expo.io/@dennysihol/projects/sugoku-isfox
